@@ -1,12 +1,21 @@
 package com.wei.demo.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.wei.demo.annotation.RateLimit;
 import com.wei.demo.entity.Order;
 import com.wei.demo.entity.Stock;
 import com.wei.demo.service.IOrderService;
 import com.wei.demo.service.IStockService;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.support.atomic.RedisAtomicInteger;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 /**
  * @author weiwenfeng
@@ -16,11 +25,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/kill")
 public class killController {
 
+    private static final Logger logger = LoggerFactory.getLogger(killController.class);
     @Reference
     private IOrderService orderService;
 
     @Reference
     private IStockService stockService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @GetMapping("/getOrder")
     public Order getOrder(){
@@ -32,13 +45,20 @@ public class killController {
         return stockService.selectStock();
     }
 
-    @RequestMapping("/createOrder/{sid}")
+    @RequestMapping("/killGoods/{sid}")
     @ResponseBody
     @Transactional
-    public void createOrder(@PathVariable int sid){
+    @RateLimit(key = "killGoods", time = 1, count = 20)
+    public void killGoods(@PathVariable int sid){
         Stock stock = checkStock(sid);
         decStock(stock);
         createOrder(stock);
+        //统计接口历史访问量
+        RedisAtomicInteger entityIdCounter = new RedisAtomicInteger("entityIdCounter", redisTemplate.getConnectionFactory());
+
+        String date = DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
+
+        logger.info(date +" 累计访问次数：" + entityIdCounter.getAndIncrement());
     }
 
     /**
