@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wei.demo.mapper.StockMapper" >
+
+    <resultMap id="BaseResultMap" type="com.wei.demo.entity.Stock" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="count" property="count" jdbcType="INTEGER" />
+        <result column="sale" property="sale" jdbcType="INTEGER" />
+        <result column="version" property="version" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectStock" resultMap="BaseResultMap" >
+        SELECT * FROM stock
+    </select>
+
+    <select id="selectStockById" resultMap="BaseResultMap">
+        SELECT * FROM stock WHERE id = #{id}
+    </select>
+
+    <update id="updateStockById">
+        UPDATE stock
+        SET sale = #{stock.sale} + 1 ,
+        version = #{stock.version} + 1
+        WHERE id = #{stock.id} AND version =#{stock.version}
+    </update>
+</mapper>
