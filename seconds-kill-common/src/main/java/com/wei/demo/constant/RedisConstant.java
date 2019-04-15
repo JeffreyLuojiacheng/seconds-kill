@@ -6,11 +6,5 @@ package com.wei.demo.constant;
  */
 public class RedisConstant {
 
-    public static String STOCK_COUNT_KEY_PREFIX = "count:";
-
-    public static String STOCK_SALE_KEY_PREFIX = "sale:";
-
-    public static String STOCK_NAME_KEY_PREFIX = "name:";
-
-    public static String STOCK_VERSION_KEY_PREFIX = "version:";
+    public static String STOCK_KEY_PREFIX = "stock:";
 }

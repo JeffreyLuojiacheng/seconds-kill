@@ -10,7 +10,7 @@
         <result column="version" property="version" jdbcType="VARCHAR" />
     </resultMap>
 
-    <select id="selectStock" resultMap="BaseResultMap" >
+    <select id="selectAllStocks" resultMap="BaseResultMap" >
         SELECT * FROM stock
     </select>
 

@@ -2,9 +2,11 @@ package com.wei.demo.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.wei.demo.entity.Stock;
-import com.wei.demo.service.IStockService;
 import com.wei.demo.mapper.StockMapper;
+import com.wei.demo.service.IStockService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * @author weiwenfeng
@@ -17,8 +19,8 @@ public class StockServiceImpl implements IStockService {
     private StockMapper stockMapper;
 
     @Override
-    public Stock selectStock() {
-        return stockMapper.selectStock();
+    public List<Stock> selectAllStocks() {
+        return stockMapper.selectAllStocks();
     }
 
     @Override

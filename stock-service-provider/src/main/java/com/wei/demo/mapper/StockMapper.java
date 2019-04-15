@@ -4,6 +4,8 @@ import com.wei.demo.entity.Stock;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author weiwenfeng
  * @date 2019/4/14
@@ -11,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface StockMapper {
 
-    Stock selectStock();
+    List<Stock> selectAllStocks();
 
     Stock selectStockById(@Param("id") int id);
 

@@ -2,13 +2,15 @@ package com.wei.demo.service;
 
 import com.wei.demo.entity.Stock;
 
+import java.util.List;
+
 /**
  * @author weiwenfeng
  * @date 2019/4/14
  */
 public interface IStockService {
 
-    Stock selectStock();
+    List<Stock> selectAllStocks();
 
     Stock selectStockById(int sid);
 

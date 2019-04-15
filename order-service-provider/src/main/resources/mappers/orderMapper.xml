@@ -9,7 +9,7 @@
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     </resultMap>
 
-    <select id="selectOrder" resultMap="BaseResultMap" >
+    <select id="selectAllOrders" resultMap="BaseResultMap" >
         SELECT * FROM stock_order
     </select>
 

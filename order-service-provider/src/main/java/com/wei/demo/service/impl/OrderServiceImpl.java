@@ -6,6 +6,8 @@ import com.wei.demo.mapper.OrderMapper;
 import com.wei.demo.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 /**
  * @author weiwenfeng
  * @date 2019/4/14
@@ -17,8 +19,8 @@ public class OrderServiceImpl implements IOrderService {
     private OrderMapper orderMapper;
 
     @Override
-    public Order selectOrder() {
-        return orderMapper.selectOrder();
+    public List<Order> selectAllOrders() {
+        return orderMapper.selectAllOrders();
     }
 
     @Override

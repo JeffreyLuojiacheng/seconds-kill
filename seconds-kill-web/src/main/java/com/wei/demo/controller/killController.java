@@ -1,6 +1,9 @@
 package com.wei.demo.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.wei.demo.annotation.RateLimit;
 import com.wei.demo.constant.RedisConstant;
 import com.wei.demo.entity.Order;
 import com.wei.demo.entity.Stock;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author weiwenfeng
@@ -26,6 +30,7 @@ import java.util.Date;
 public class killController {
 
     private static final Logger logger = LoggerFactory.getLogger(killController.class);
+
     @Reference
     private IOrderService orderService;
 
@@ -35,20 +40,31 @@ public class killController {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    @GetMapping("/getOrder")
-    public Order getOrder() {
-        return orderService.selectOrder();
+    @GetMapping("/getAllOrders")
+    public List<Order> getAllOrders() {
+        return orderService.selectAllOrders();
     }
 
-    @GetMapping("/getStock")
-    public Stock getStock() {
-        return stockService.selectStock();
+    @GetMapping("/getAllStocks")
+    public List<Stock> getAllStocks() {
+        return stockService.selectAllStocks();
+    }
+
+    @GetMapping("/loadDataFromDBtoRedis")
+    public void loadDataFromDBtoRedis(){
+        List<Stock> stocks = stockService.selectAllStocks();
+        if (null != stocks && stocks.size() != 0) {
+            for (Stock stock : stocks) {
+                int sid = stock.getId();
+                redisTemplate.opsForValue().set(RedisConstant.STOCK_KEY_PREFIX + sid, JSON.toJSONString(stock));
+            }
+        }
     }
 
     @RequestMapping("/killGoods/{sid}")
     @ResponseBody
     @Transactional
-    //@RateLimit(key = "killGoods", time = 1, count = 50)
+    @RateLimit(key = "killGoods", time = 1, count = 50)
     public void killGoods(@PathVariable int sid) {
         countVisitNum();
         //saleFromDB(sid);
@@ -121,19 +137,11 @@ public class killController {
      * @return
      */
     private Stock checkStockFromRedis(int sid) {
-        Integer count = Integer.parseInt(redisTemplate.opsForValue().get(RedisConstant.STOCK_COUNT_KEY_PREFIX + sid));
-        Integer sale = Integer.parseInt(redisTemplate.opsForValue().get(RedisConstant.STOCK_SALE_KEY_PREFIX + sid));
-        if (count.equals(sale)) {
+        String stockJson = redisTemplate.opsForValue().get(RedisConstant.STOCK_KEY_PREFIX + sid);
+        Stock stock = JSON.parseObject(stockJson,new TypeReference<Stock>(){});
+        if (stock.getCount().equals(stock.getSale())) {
             throw new RuntimeException("库存不足！");
         }
-        String name = redisTemplate.opsForValue().get(RedisConstant.STOCK_NAME_KEY_PREFIX + sid);
-        Integer version = Integer.parseInt(redisTemplate.opsForValue().get(RedisConstant.STOCK_VERSION_KEY_PREFIX + sid));
-        Stock stock = new Stock();
-        stock.setId(sid);
-        stock.setName(name);
-        stock.setCount(count);
-        stock.setSale(sale);
-        stock.setVersion(version);
         return stock;
     }
 
@@ -146,8 +154,9 @@ public class killController {
         if (updateNum == 0) {
             throw new RuntimeException("更新库存失败！");
         }
-        redisTemplate.opsForValue().increment(RedisConstant.STOCK_SALE_KEY_PREFIX + stock.getId(), 1);
-        redisTemplate.opsForValue().increment(RedisConstant.STOCK_VERSION_KEY_PREFIX + stock.getId(), 1);
+        stock.setSale(stock.getSale() + 1);
+        stock.setVersion(stock.getVersion() + 1);
+        redisTemplate.opsForValue().set(RedisConstant.STOCK_KEY_PREFIX + stock.getId(), JSON.toJSONString(stock));
     }
 
     /**
