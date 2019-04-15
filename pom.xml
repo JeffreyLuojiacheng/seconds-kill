@@ -23,6 +23,7 @@
 		<module>order-service-api</module>
 		<module>order-service-provider</module>
 		<module>seconds-kill-common</module>
+		<module>seconds-kill-message-consumer</module>
 	</modules>
 
 	<properties>
