@@ -22,6 +22,7 @@
 		<module>stock-service-provider</module>
 		<module>order-service-api</module>
 		<module>order-service-provider</module>
+		<module>seconds-kill-common</module>
 	</modules>
 
 	<properties>

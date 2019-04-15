@@ -48,11 +48,14 @@ public class LimitAspect {
             String ipAddress = getIpAddr(request);
 
             StringBuffer stringBuffer = new StringBuffer();
+            //1.单位时间内针对通过ip的限流
             stringBuffer.append(ipAddress).append("-")
                     .append(targetClass.getName()).append("-")
                     .append(method.getName()).append("-")
                     .append(rateLimit.key());
 
+            //2.单位时间内对所有请求的限流
+            //stringBuffer.append(System.currentTimeMillis()/1000);
             List<String> keys = Collections.singletonList(stringBuffer.toString());
 
             //传入脚本对象、限流key、限流次数、限流时间参数

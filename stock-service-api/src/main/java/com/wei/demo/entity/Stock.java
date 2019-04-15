@@ -21,5 +21,5 @@ public class Stock implements Serializable{
 
     private Integer sale;
 
-    private String version;
+    private Integer version;
 }
