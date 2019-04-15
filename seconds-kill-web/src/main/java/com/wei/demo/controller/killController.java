@@ -3,22 +3,20 @@ package com.wei.demo.controller;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.wei.demo.annotation.CountVisitNum;
 import com.wei.demo.annotation.RateLimit;
 import com.wei.demo.constant.RedisConstant;
 import com.wei.demo.entity.Order;
 import com.wei.demo.entity.Stock;
 import com.wei.demo.service.IOrderService;
 import com.wei.demo.service.IStockService;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.support.atomic.RedisAtomicInteger;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,6 +49,7 @@ public class killController {
     }
 
     @GetMapping("/loadDataFromDBtoRedis")
+    @CountVisitNum(key = "loadDataFromDBtoRedis")
     public void loadDataFromDBtoRedis(){
         List<Stock> stocks = stockService.selectAllStocks();
         if (null != stocks && stocks.size() != 0) {
@@ -66,7 +65,6 @@ public class killController {
     @Transactional
     @RateLimit(key = "killGoods", time = 1, count = 50)
     public void killGoods(@PathVariable int sid) {
-        countVisitNum();
         //saleFromDB(sid);
         saleFromRedis(sid);
     }
@@ -90,18 +88,6 @@ public class killController {
         Stock stock = checkStockFromRedis(sid);
         decStockFromRedis(stock);
         createOrder(stock);
-    }
-
-    /**
-     * 统计接口历史访问量
-     */
-    private void countVisitNum() {
-
-        RedisAtomicInteger entityIdCounter = new RedisAtomicInteger("entityIdCounter", redisTemplate.getConnectionFactory());
-
-        String date = DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
-
-        logger.info(date + " 累计访问次数：" + entityIdCounter.getAndIncrement());
     }
 
     /**
