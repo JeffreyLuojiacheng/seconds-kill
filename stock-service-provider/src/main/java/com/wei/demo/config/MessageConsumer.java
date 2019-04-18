@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.List;
 public class MessageConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(MessageConsumer.class);
+
     @Autowired
     private Producer producer;
 
@@ -42,8 +44,9 @@ public class MessageConsumer {
     private RedisTemplate redisTemplate;
 
     @PostConstruct
+    @Transactional
     public void initConsumer() {
-        consumer.subscribe("dec:stock:", null, null, new MessageListenerConcurrently() {
+        consumer.subscribe("dec:stock:", null, "orderGroup", new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
                 for (MessageExt message : list) {

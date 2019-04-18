@@ -39,7 +39,7 @@ public class MessageConsumer {
 
     @PostConstruct
     public void initConsumer() {
-        consumer.subscribe("incr:order", null, null, new MessageListenerConcurrently() {
+        consumer.subscribe("incr:order", null, "stockGroup", new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
                 for (MessageExt message : list) {
