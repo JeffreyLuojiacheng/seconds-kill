@@ -3,7 +3,6 @@ package com.wei.demo.config;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.wei.demo.constant.RedisConstant;
-import com.wei.demo.constant.TempUserConstant;
 import com.wei.demo.entity.Stock;
 import com.wei.demo.mq.Consumer;
 import com.wei.demo.mq.Producer;
@@ -60,7 +59,7 @@ public class MessageConsumer {
                         stock.setSale(stock.getSale() + 1);
                         stock.setVersion(stock.getVersion() + 1);
                         redisTemplate.opsForValue().set(RedisConstant.STOCK_KEY_PREFIX + stock.getId(), JSON.toJSONString(stock));
-                        producer.sendOrderMessage("incr:order:",null,JSON.toJSONBytes(stock), TempUserConstant.USER_ID);
+                        producer.send("incr:order:", null, JSON.toJSONBytes(stock));
                     } catch (RuntimeException e) {
                         log.error("Consume message fail：topic = dec:stock:,fail time = " + message.getReconsumeTimes(), e);
                         return message.getReconsumeTimes() > 10 ? ConsumeConcurrentlyStatus.CONSUME_SUCCESS :

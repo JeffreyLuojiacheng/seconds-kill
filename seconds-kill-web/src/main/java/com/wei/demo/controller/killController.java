@@ -6,7 +6,6 @@ import com.alibaba.fastjson.TypeReference;
 import com.wei.demo.annotation.CountVisitNum;
 import com.wei.demo.annotation.RateLimit;
 import com.wei.demo.constant.RedisConstant;
-import com.wei.demo.constant.TempUserConstant;
 import com.wei.demo.entity.Order;
 import com.wei.demo.entity.Stock;
 import com.wei.demo.mq.Producer;
@@ -79,7 +78,7 @@ public class killController {
     private void saleFromRedis(int sid) {
         Stock stock = checkStockFromRedis(sid);
         //异步操作，将减库存的消息发送到消息队列中
-        producer.sendOrderMessage("dec:stock:",null,JSON.toJSONBytes(stock), TempUserConstant.USER_ID);
+        producer.send("dec:stock:",null,JSON.toJSONBytes(stock));
     }
 
     /**
