@@ -1,5 +1,8 @@
 ## 秒杀系统
 
+### 使用技术
+Springboot, SpringMVC, MyBatis, Mysql, Zookeeper, Dubbo, Redis, Lua, Rocketmq
+
 ### 整体思想
 
 #### 限流
