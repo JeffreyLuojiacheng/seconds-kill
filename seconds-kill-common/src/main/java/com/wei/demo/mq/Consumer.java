@@ -1,7 +1,7 @@
 package com.wei.demo.mq;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +22,9 @@ public class Consumer {
      * @param topic 订阅话题
      * @param tags 订阅tags
      * @param groupName 消费组名
-     * @param messageListener 顺序消息监听器
+     * @param messageListener 消息监听器
      */
-    public void subscribe(String topic, String tags, String groupName, MessageListenerOrderly messageListener){
+    public void subscribe(String topic, String tags, String groupName, MessageListenerConcurrently messageListener){
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(groupName);
         consumer.setNamesrvAddr(nameAddr);
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);

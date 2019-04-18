@@ -23,12 +23,11 @@
 		<module>order-service-api</module>
 		<module>order-service-provider</module>
 		<module>seconds-kill-common</module>
-		<module>seconds-kill-message-consumer</module>
 	</modules>
 
 	<properties>
 		<java.version>1.8</java.version>
-		<rocketmq.version>4.3.0</rocketmq.version>
+		<rocketmq.version>4.5.0</rocketmq.version>
 		<fastjson.version>1.2.29</fastjson.version>
 		<springboot.dubbo.version>1.0.0</springboot.dubbo.version>
 		<log4j.version>1.2.17</log4j.version>
