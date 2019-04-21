@@ -2,9 +2,11 @@ package com.wei.demo.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.wei.demo.annotation.CountVisitNum;
 import com.wei.demo.annotation.RateLimit;
+import com.wei.demo.constant.MQConstant;
 import com.wei.demo.constant.RedisConstant;
 import com.wei.demo.entity.Order;
 import com.wei.demo.entity.Stock;
@@ -53,7 +55,7 @@ public class killController {
 
     @GetMapping("/loadDataFromDBtoRedis")
     @CountVisitNum(key = "loadDataFromDBtoRedis")
-    public void loadDataFromDBtoRedis(){
+    public String loadDataFromDBtoRedis(){
         List<Stock> stocks = stockService.selectAllStocks();
         if (null != stocks && stocks.size() != 0) {
             for (Stock stock : stocks) {
@@ -61,24 +63,20 @@ public class killController {
                 redisTemplate.opsForValue().set(RedisConstant.STOCK_KEY_PREFIX + sid, JSON.toJSONString(stock));
             }
         }
+        return "load data success!";
     }
 
     @RequestMapping("/killGoods/{sid}")
     @ResponseBody
     @RateLimit(key = "killGoods", time = 1, count = 50)
     public void killGoods(@PathVariable int sid) {
-        saleFromRedis(sid);
+        saleFromRedisAndMQ(sid);
     }
 
-    /**
-     * 从redis查询库存并修改，同时也要利用数据库的乐观锁防止“超卖”现象，
-     * 需要注意的是保证数据库和redis的数据一致
-     * @param sid
-     */
-    private void saleFromRedis(int sid) {
+    private void saleFromRedisAndMQ(int sid){
         Stock stock = checkStockFromRedis(sid);
         //异步操作，将减库存的消息发送到消息队列中
-        producer.send("dec:stock:",null,JSON.toJSONBytes(stock));
+        producer.send(MQConstant.DEC_STOCK_TOPIC,null, JSONObject.toJSONBytes(stock));
     }
 
     /**

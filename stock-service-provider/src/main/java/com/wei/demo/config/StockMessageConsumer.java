@@ -1,7 +1,8 @@
 package com.wei.demo.config;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.JSONObject;
+import com.wei.demo.constant.MQConstant;
 import com.wei.demo.constant.RedisConstant;
 import com.wei.demo.entity.Stock;
 import com.wei.demo.mq.Consumer;
@@ -26,9 +27,9 @@ import java.util.List;
  * @date 2019/4/18
  */
 @Component
-public class MessageConsumer {
+public class StockMessageConsumer {
 
-    private static final Logger log = LoggerFactory.getLogger(MessageConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(StockMessageConsumer.class);
 
     @Autowired
     private Producer producer;
@@ -40,18 +41,17 @@ public class MessageConsumer {
     private IStockService stockService;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,String> redisTemplate;
 
     @PostConstruct
     @Transactional
     public void initConsumer() {
-        consumer.subscribe("dec:stock:", null, "orderGroup", new MessageListenerConcurrently() {
+        consumer.subscribe(MQConstant.DEC_STOCK_TOPIC, null, "stockGroup", new MessageListenerConcurrently() {
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
                 for (MessageExt message : list) {
                     try {
-                        Stock stock = JSON.parseObject(message.getBody().toString(), new TypeReference<Stock>() {
-                        });
+                        Stock stock = JSONObject.parseObject(message.getBody(),Stock.class);
                         int updateNum = stockService.updateStockById(stock);
                         if (updateNum == 0) {
                             throw new RuntimeException("更新库存失败！");
@@ -59,9 +59,10 @@ public class MessageConsumer {
                         stock.setSale(stock.getSale() + 1);
                         stock.setVersion(stock.getVersion() + 1);
                         redisTemplate.opsForValue().set(RedisConstant.STOCK_KEY_PREFIX + stock.getId(), JSON.toJSONString(stock));
-                        producer.send("incr:order:", null, JSON.toJSONBytes(stock));
+                        producer.send(MQConstant.INCR_ORDER_TOPIC, null, JSON.toJSONBytes(stock));
                     } catch (RuntimeException e) {
-                        log.error("Consume message fail：topic = dec:stock:,fail time = " + message.getReconsumeTimes(), e);
+                        log.error("Consume message fail：topic = " + MQConstant.DEC_STOCK_TOPIC +
+                                ",fail time = " + message.getReconsumeTimes(), e);
                         return message.getReconsumeTimes() > 10 ? ConsumeConcurrentlyStatus.CONSUME_SUCCESS :
                                 ConsumeConcurrentlyStatus.RECONSUME_LATER;
                     }
